@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package src;
+
+option go_package = "src/api";
+
+service ACache {
+    rpc Save(Item) returns (Response);
+    rpc Get(Key) returns (ItemResponse);
+    rpc Remove(Key) returns (Response);
+}
+
+enum Status {
+    OK = 0;
+    UNKNOWN_ERROR = 1;
+    KEY_NOT_FOUND = 2;
+}
+
+message Key {
+    string key = 1;
+}
+
+message Item {
+    string key = 1;
+    bytes value = 2;
+}
+
+message Response {
+    Status status = 1;
+}
+
+message ItemResponse {
+    Status status = 1;
+    Item item = 2;
+}
