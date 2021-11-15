@@ -15,7 +15,7 @@ Run locally:
 go run bench/bench.go -c="4096" -p="8083"
 ```
 
-Results:
+My Results:
 ```
 Get  /    1 Client  RPS : 8299.20
 Get  /   10 Clients RPS : 41231.20
@@ -35,3 +35,8 @@ Just a simple grpc server, as described in `api/item.proto`
 
 Storage: `src/server/server.go`  
 HashMap over DoubleLinkedList. Values of HashMap are pointing to List Nodes. DoubleLinkedList is used as LruQueue. This gives O(1) time complexity to insert values in front, remove values from tail, geting value from anywhere and moving it to front & removing values.
+
+**Testing**
+```
+go test -v ./...
+```
