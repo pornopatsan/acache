@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"log"
+	"sync"
 
 	"github.com/pornopatsan/acache/src/api"
 	"github.com/pornopatsan/acache/src/storage"
@@ -10,7 +11,8 @@ import (
 
 type ACacheServer struct {
 	api.UnimplementedACacheServer
-	cache storage.Cache
+	cache   storage.Cache
+	cacheMx sync.Mutex
 }
 
 func Create(cache storage.Cache) *ACacheServer {
@@ -21,7 +23,9 @@ func Create(cache storage.Cache) *ACacheServer {
 
 func (self *ACacheServer) Save(ctx context.Context, item *api.Item) (*api.Response, error) {
 	log.Printf("Save %s\n", item.Key)
-	if err := self.cache.Save(item.GetKey(), item.GetValue()); err != nil {
+	self.cacheMx.Lock()
+	defer self.cacheMx.Unlock()
+	if err := self.cache.Save(item.Key, item.Value); err != nil {
 		return &api.Response{Status: api.Status_UNKNOWN_ERROR}, nil
 	}
 	return &api.Response{Status: api.Status_OK}, nil
@@ -29,6 +33,8 @@ func (self *ACacheServer) Save(ctx context.Context, item *api.Item) (*api.Respon
 
 func (self *ACacheServer) Get(ctx context.Context, key *api.Key) (*api.ItemResponse, error) {
 	log.Printf("Get %s\n", key.Key)
+	self.cacheMx.Lock()
+	defer self.cacheMx.Unlock()
 	item, err := self.cache.Get(key.Key)
 	if err != nil {
 		return &api.ItemResponse{Status: api.Status_KEY_NOT_FOUND}, nil
@@ -44,5 +50,10 @@ func (self *ACacheServer) Get(ctx context.Context, key *api.Key) (*api.ItemRespo
 
 func (self *ACacheServer) Remove(ctx context.Context, key *api.Key) (*api.Response, error) {
 	log.Printf("Remove %s\n", key.Key)
+	self.cacheMx.Lock()
+	defer self.cacheMx.Unlock()
+	if err := self.cache.Remove(key.Key); err != nil {
+		return &api.Response{Status: api.Status_KEY_NOT_FOUND}, nil
+	}
 	return &api.Response{Status: api.Status_OK}, nil
 }

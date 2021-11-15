@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	DEFAULT_SIZE = uint(4096)
+	DEFAULT_CAPACITY = uint(4096)
 )
 
 type Item struct {
@@ -17,26 +17,27 @@ type Item struct {
 
 type Cache interface {
 	Save(string, []byte) error
-	Get(string) (Item, error)
+	Get(string) (*Item, error)
 	Remove(string) error
+	Size() uint
 }
 
 type LruCache struct {
-	items   map[string]dlist.Node
-	lruIems dlist.LruQueue
-	size    uint
+	items    map[string]*dlist.Node
+	lruIems  dlist.LruQueue
+	capacity uint
 }
 
-func Create(size uint) *LruCache {
+func Create(capacity uint) *LruCache {
 	return &LruCache{
-		items:   make(map[string]dlist.Node),
-		lruIems: dlist.Create(),
-		size:    size,
+		items:    make(map[string]*dlist.Node),
+		lruIems:  dlist.Create(),
+		capacity: capacity,
 	}
 }
 
 func CreateDefault() *LruCache {
-	return Create(DEFAULT_SIZE)
+	return Create(DEFAULT_CAPACITY)
 }
 
 func (self *LruCache) removeOldest() error {
@@ -48,31 +49,39 @@ func (self *LruCache) removeOldest() error {
 	return nil
 }
 
+func (self *LruCache) Size() uint {
+	return self.lruIems.Size()
+}
+
+func (self *LruCache) Capacity() uint {
+	return self.capacity
+}
+
 func (self *LruCache) Save(key string, value []byte) error {
 	node, exists := self.items[key]
 	if !exists {
-		if self.lruIems.Size() >= self.size {
+		if self.Size() >= self.Capacity() {
 			if err := self.removeOldest(); err != nil {
 				return err
 			}
 		}
 		newNode := dlist.CreateNode(key, value)
-		self.items[key] = *newNode
+		self.items[key] = newNode
 		self.lruIems.PushFront(newNode)
 	} else {
-		self.lruIems.MoveFront(&node)
+		self.lruIems.MoveFront(node)
 		node.Value = value
 	}
 	return nil
 }
 
-func (self *LruCache) Get(key string) (Item, error) {
+func (self *LruCache) Get(key string) (*Item, error) {
 	node, exists := self.items[key]
 	if !exists {
-		return Item{}, KeyNotFoundError{key: key}
+		return nil, KeyNotFoundError{key: key}
 	}
-	self.lruIems.MoveFront(&node)
-	return Item{Key: key, Value: node.Value}, nil
+	self.lruIems.MoveFront(node)
+	return &Item{Key: key, Value: node.Value}, nil
 }
 
 func (self *LruCache) Remove(key string) error {
@@ -80,7 +89,7 @@ func (self *LruCache) Remove(key string) error {
 	if !exists {
 		return KeyNotFoundError{key: key}
 	}
-	self.lruIems.Remove(&node)
+	self.lruIems.Remove(node)
 	delete(self.items, key)
 	return nil
 }

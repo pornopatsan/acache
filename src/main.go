@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net"
 
@@ -11,12 +13,15 @@ import (
 )
 
 func main() {
-	println("unimplemented")
+	capacity := flag.Uint("c", 4096, "Capacity of ACache server")
+	port := flag.Int("p", 8080, "Port, on which server wiil be located")
+	flag.Parse()
+
 	s := grpc.NewServer()
-	srv := server.Create(storage.CreateDefault())
+	srv := server.Create(storage.Create(*capacity))
 	api.RegisterACacheServer(s, srv)
 
-	sock, err := net.Listen("tcp", ":8083")
+	sock, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
 		log.Fatal(err)
 	}
