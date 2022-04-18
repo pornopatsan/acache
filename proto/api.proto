@@ -5,9 +5,9 @@ package src;
 option go_package = "src/api";
 
 service ACache {
-    rpc Save(Item) returns (Response);
+    rpc Set(Item) returns (Response);
     rpc Get(Key) returns (ItemResponse);
-    rpc Remove(Key) returns (Response);
+    rpc Delete(Key) returns (Response);
 }
 
 enum Status {
