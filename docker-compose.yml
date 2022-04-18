@@ -1,0 +1,28 @@
+# maintainer: Hamlet Avetikyan <hamlet.avetikyn@gmail.com>
+
+version: '3'
+
+services:
+  app:
+    build: .
+    container_name: acache
+    restart: always
+    ports:
+      - "8080:8080"
+    tty: true
+    depends_on:
+      - memcached
+    networks:
+      - fullstack
+  memcached:
+    container_name: memcached
+    image: memcached:latest
+    ports:
+      - "11211:11211"
+    tty: true
+    networks:
+      - fullstack
+
+networks:
+  fullstack:
+    driver: bridge
