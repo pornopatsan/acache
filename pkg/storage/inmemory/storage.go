@@ -11,11 +11,11 @@ func New() *Cache {
 
 type Cache struct {
 	items map[string][]byte
-	len   uint
+	len   int64
 	sync.Mutex
 }
 
-func (c *Cache) Size() uint {
+func (c *Cache) Size() int64 {
 	return c.len
 }
 

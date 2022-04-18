@@ -11,7 +11,7 @@ func New(path string) *Cache {
 
 type Cache struct {
 	client *memcache.Client
-	len    uint
+	len    int64
 }
 
 func (c *Cache) Set(key string, value []byte) error {
@@ -44,6 +44,6 @@ func (c *Cache) Delete(key string) error {
 	return nil
 }
 
-func (c *Cache) Size() uint {
+func (c *Cache) Size() int64 {
 	return c.len
 }

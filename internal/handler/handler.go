@@ -1,9 +1,10 @@
 package handler
 
 import (
-	"acache/pkg/util/errors"
 	"context"
 	"log"
+
+	"acache/pkg/util/errors"
 
 	pb "acache/pkg/gen/proto"
 )
@@ -52,4 +53,8 @@ func (h *Handler) Delete(_ context.Context, key *pb.Key) (*pb.Response, error) {
 	}
 
 	return &pb.Response{Status: pb.Status_OK}, nil
+}
+
+func (h *Handler) Size(_ context.Context, _ *pb.Empty) (*pb.SizeResponse, error) {
+	return &pb.SizeResponse{Size: h.cache.Size()}, nil
 }

@@ -8,6 +8,7 @@ service ACache {
     rpc Set(Item) returns (Response);
     rpc Get(Key) returns (ItemResponse);
     rpc Delete(Key) returns (Response);
+    rpc Size(Empty) returns (SizeResponse);
 }
 
 enum Status {
@@ -15,6 +16,8 @@ enum Status {
     UNKNOWN_ERROR = 1;
     KEY_NOT_FOUND = 2;
 }
+
+message Empty {}
 
 message Key {
     string key = 1;
@@ -32,4 +35,8 @@ message Response {
 message ItemResponse {
     Status status = 1;
     Item item = 2;
+}
+
+message SizeResponse {
+    int64 size = 1;
 }
