@@ -15,6 +15,7 @@ type LruQueue interface {
 	Remove(*Node) (*Node, error)
 	PopBack() (*Node, error)
 	Size() uint
+	Validate() error
 }
 
 type List interface {
@@ -159,6 +160,66 @@ func (self *DoubleLinkedList) MoveFront(node *Node) error {
 
 func (self *DoubleLinkedList) Size() uint {
 	return self.size
+}
+
+// Validate walks the list in both directions and checks structural integrity.
+// Returns an error describing the first inconsistency found, or nil if valid.
+func (self *DoubleLinkedList) Validate() error {
+	if self.size == 0 {
+		if self.head != nil {
+			return fmt.Errorf("size is 0 but head is not nil")
+		}
+		if self.tail != nil {
+			return fmt.Errorf("size is 0 but tail is not nil")
+		}
+		return nil
+	}
+
+	if self.head == nil {
+		return fmt.Errorf("size is %d but head is nil", self.size)
+	}
+	if self.tail == nil {
+		return fmt.Errorf("size is %d but tail is nil", self.size)
+	}
+	if self.head.prev != nil {
+		return fmt.Errorf("head.prev is not nil")
+	}
+	if self.tail.next != nil {
+		return fmt.Errorf("tail.next is not nil")
+	}
+
+	// Walk head → tail
+	forwardCount := uint(0)
+	for node := self.head; node != nil; node = node.next {
+		forwardCount++
+		if forwardCount > self.size {
+			return fmt.Errorf("forward walk found more nodes than size %d (possible cycle)", self.size)
+		}
+		if node.next != nil && node.next.prev != node {
+			return fmt.Errorf("node.next.prev != node at key %q", node.Key)
+		}
+	}
+
+	// Walk tail → head
+	backwardCount := uint(0)
+	for node := self.tail; node != nil; node = node.prev {
+		backwardCount++
+		if backwardCount > self.size {
+			return fmt.Errorf("backward walk found more nodes than size %d (possible cycle)", self.size)
+		}
+		if node.prev != nil && node.prev.next != node {
+			return fmt.Errorf("node.prev.next != node at key %q", node.Key)
+		}
+	}
+
+	if forwardCount != self.size {
+		return fmt.Errorf("forward walk count %d != size %d", forwardCount, self.size)
+	}
+	if backwardCount != self.size {
+		return fmt.Errorf("backward walk count %d != size %d", backwardCount, self.size)
+	}
+
+	return nil
 }
 
 type OutOfRangeError struct {

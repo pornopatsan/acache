@@ -13,7 +13,7 @@ ACache is a gRPC-based in-memory LRU cache server written in Go. It exposes Save
 go run src/main.go -c="4096" -p="8083"
 
 # Run all tests
-go test -v ./...
+go test -race -v ./...
 
 # Run benchmarks (requires a running server)
 go run bench/bench.go -c="4096" -p="8083"
