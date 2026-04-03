@@ -38,5 +38,5 @@ HashMap over DoubleLinkedList. Values of HashMap are pointing to List Nodes. Dou
 
 **Testing**
 ```
-go test -race -v ./...
+go test -race -timeout 60s ./...
 ```
